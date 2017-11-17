@@ -30,3 +30,8 @@
 *.exe
 *.out
 *.app
+
+# Ignore vim temorary / swap files
+*~
+*.swp
+*.swo
