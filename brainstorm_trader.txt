@@ -1,0 +1,28 @@
+################################################################################
+
+Write separate program to collect data from cryptowat.ch or poloniex and store 
+in text file.  Lets keep this consistent.
+
+Use 80% of dataset for breeding and 20% for testing.
+
+To load data into the brain, we should:
+  - input high/low open/close prices for each time block
+  - output a 1 or a 0 for buy or sell.
+
+  To get output
+  - if there is a 1 output, buy and hold on to the buy
+  - if there is a 0 output, sell and stay out
+
+  To score fitness
+  - Each Agent gets $100.00 to start with.
+   - If the Agent ever goes below $10.00, then they stop processing data
+     +  and are scored from that point.
+     - At the end of processing, The fitness level is scored based on profit.
+     +  So if the agent ends with $50.00, he receives a score of 25%.  If he ends
+       +  with $100.00 (what he starts with), he receives 50%, $200.00, receives 100%
+       +  This keeps going until we decide to stop the program.  We are looking for
+         +  Consistency.
+
+
+
+
