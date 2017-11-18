@@ -11,8 +11,8 @@ using namespace mth;
 
 // GLOBALS
 ////////////////////////////////////////////////////////////////////////////////
-const int    NUM_OF_CANDLES = 100;
-const int    NUM_OF_NEURONS = 200;
+const int    NUM_OF_CANDLES = 1000;
+const int    NUM_OF_NEURONS = 300;
 const int    SIZE_OF_POP    = 20;
 const double MUTATE_CHANCE  = 0.6;
 const double BATTLE_CHANCE  = 0.05;

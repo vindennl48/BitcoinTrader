@@ -98,13 +98,16 @@ void Agent::mutate(){
 void Agent::get_fitness(){
 
 
-  if(fitness == -1){
+  //if(fitness == -1){
 
     fitness = 0;
+    bank = 100.0;
 
-
-    int len_candles = candles.size();
-    loop(i, len_candles){
+    int sz_candles  = candles.size();
+    int len_candles = NUM_OF_CANDLES;
+    int pos_candles = rand()%(sz_candles-len_candles);
+    loop(r, len_candles){
+      int i = r + pos_candles;
       // print("Candle: " << candles[i][0] << candles[i][1] << candles[i][2] << candles[i][3]);
 
       CANDLE *candle = &candles.at(i);
@@ -145,7 +148,7 @@ void Agent::get_fitness(){
 
     fitness = bank;
 
-  };
+  //};
 
   brain::reset(dna);
 
@@ -620,7 +623,7 @@ CANDLES get_candles(int num_candles){
     result_pre.end()
   );
 
-  return result;
+  return result_pre;
 
 };
 ////////////////////////////////////////////////////////////////////////////////
