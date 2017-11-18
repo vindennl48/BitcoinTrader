@@ -10,7 +10,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 extern const int    NUM_OF_CANDLES;
 extern const int    NUM_OF_NEURONS;
+extern const int    SIZE_OF_POP;
 extern const double MUTATE_CHANCE;
+extern const double BATTLE_CHANCE;
 ////////////////////////////////////////////////////////////////////////////////
 
 
@@ -32,11 +34,11 @@ extern const double MUTATE_CHANCE;
 #define AGENT   Agent
 
 class Agent{
+public:
 
   static int agent_id;
   static CANDLES candles;
 
-public:
   int    ID;
   double fitness, bank;
   BRAIN  dna;
@@ -62,13 +64,14 @@ public:
 class Genetics{
 
 public:
-  int     population, num_of_children;
+  int     population, num_of_children, generation;
   double  chance_amount;
   int time_start, time_average;
   AGENTS agents;
 
   Genetics(int, int, double);
   void  run();
+  int   add_agent_to_vector(AGENTS&, Agent&);
   void  create_new_generation();
   Agent best_fit_selection();
   void  fitness();
@@ -78,6 +81,8 @@ public:
   std::string get_str();
 
   std::string print_output();
+  int save();
+  int load();
 
 };
 

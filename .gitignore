@@ -35,3 +35,11 @@
 *~
 *.swp
 *.swo
+
+# custom
+fancyout.c
+fancyout.h
+termgui.c
+termgui.h
+mth.h
+

@@ -21,6 +21,8 @@ namespace brain {
 
   std::vector<double> output(BRAIN &b, int num_outputs);
 
+  void reset(BRAIN&);
+
 }
 ////////////////////////////////////////////////////////////////////////////////
 

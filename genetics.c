@@ -102,14 +102,28 @@ void Agent::get_fitness(){
 
     fitness = 0;
 
+
     int len_candles = candles.size();
     loop(i, len_candles){
-
+      // print("Candle: " << candles[i][0] << candles[i][1] << candles[i][2] << candles[i][3]);
 
       CANDLE *candle = &candles.at(i);
       brain::input(dna, *candle);
+      // print(brain::get_str(dna));
       brain::run(dna, 2);
+      // print(brain::get_str(dna));
+      // PAUSE;
+      // loop(r, dna.size()){
+      //   string get_out;
+      //   loop(s,dna[r].size()){
+      //     get_out += mth::dbl_to_s(dna[r][s], 1);
+      //     get_out += ", ";
+      //   };
+      //   print(get_out);
+      //   PAUSE;
+      // };
       double output = (brain::output(dna, 1)).at(0);
+      
       
       if(output == 1 && trade.at(IN_TRADE) == 0){
         trade.at(IN_TRADE) = 1;
@@ -132,7 +146,9 @@ void Agent::get_fitness(){
     fitness = bank;
 
   };
-    
+
+  brain::reset(dna);
+
 };
 
 
@@ -151,6 +167,7 @@ Genetics::Genetics(int pop, int num_children, double chance){
   population      = pop;
   num_of_children = num_children;
   chance_amount   = chance;
+  generation      = 0;
 
   // Time Vars
   time_start      = mth::mtime();
@@ -169,30 +186,159 @@ void Genetics::run(){
 
   int start, end;
 
-  int generation = 0;
-  while(true){
-
+  // while(true){
     start = mth::mtime();
-
-    // print(" - Starting fitness");
   
     fitness();
 
     system("clear;clear");
     print(" # Generation: " << generation);
     print(get_str());
-    // print(" - Creating New Generation");
 
     create_new_generation();
 
     end = mth::mtime();
-
     print(get_time(start,end));
 
     generation += 1;
 
+  // };
+
+};
+
+
+
+int Genetics::save(){
+  stringstream result;
+  result << "NUM_OF_CANDLES: " << NUM_OF_CANDLES  << endl;
+  result << "NUM_OF_NEURONS: " << NUM_OF_NEURONS  << endl;
+  result << "SIZE_OF_POP: "    << SIZE_OF_POP     << endl;
+  result << "MUTATE_CHANCE: "  << MUTATE_CHANCE   << endl;
+  result << "BATTLE_CHANCE: "  << BATTLE_CHANCE   << endl;
+  result << "#############" << endl;
+
+  result << population      << endl;
+  result << num_of_children << endl;
+  result << generation      << endl;
+  result << chance_amount   << endl;
+  result << Agent::agent_id << endl;
+  result << "#############" << endl;
+
+  int len_agents = agents.size();
+  loop(i, len_agents){
+
+    Agent* agent = &agents[i];
+
+    result << (*agent).ID      << endl;
+    result << (*agent).fitness << endl;
+    result << (*agent).bank    << endl;
+    loop(j, 4){
+      result << (*agent).trade[j] << endl;
+    };
+
+    // dna
+    BRAIN* dna = &(*agent).dna;
+    int len_dna = (*dna).size();
+    loop(j, len_dna){
+
+      NEURON* neuron = &(*dna).at(j);
+      int len_neuron = (*neuron).size();
+      loop(k, len_neuron){
+
+        result << (*neuron).at(k) << endl;
+      };
+
+      result << "%" << endl;
+    };
+
+    result << "#############" << endl;
+
   };
 
+  try{
+    ofstream f("genetics_save");
+    f << result.str();
+    f.close();
+  }
+  catch(...){
+    print("Save was unsuccessful!");
+    return 0;
+  };
+
+  return 1;
+
+};
+
+
+
+int Genetics::load(){
+  string temp_str;
+  string::size_type sz;
+
+  ifstream f("genetics_save");
+
+  loop(i, 6){ 
+    getline(f, temp_str);
+  };
+
+  getline(f, temp_str);
+    population = stoi(temp_str, &sz);
+
+  getline(f, temp_str);
+    num_of_children = stoi(temp_str, &sz);
+
+  getline(f, temp_str);
+    generation = stoi(temp_str, &sz);
+
+  getline(f, temp_str);
+    chance_amount = stod(temp_str, &sz);
+
+  getline(f, temp_str);
+    Agent::agent_id = stoi(temp_str, &sz);
+
+  getline(f, temp_str); // skip a line
+
+  agents.clear();
+
+  while(!f.eof()){
+    Agent agent = Agent();
+    agent.dna.clear();
+    getline(f, temp_str);
+      try{
+        agent.ID = stoi(temp_str, &sz);
+      }
+      catch(...){ return 1; }
+
+    getline(f, temp_str);
+      agent.fitness = stod(temp_str, &sz);
+
+    getline(f, temp_str);
+      agent.bank = stod(temp_str, &sz);
+
+    loop(i, 4){
+      getline(f, temp_str);
+        agent.trade[i] = stod(temp_str, &sz);
+    }
+
+    int itr = 0;
+    while(true){
+      NEURON neuron;
+      while(true){
+        getline(f, temp_str);
+        if(temp_str[0] == '#' || temp_str[0] == '%') break;
+        neuron.push_back(stod(temp_str, &sz));
+      };
+      if(temp_str[0] == '#') break;
+      agent.dna.push_back(neuron);
+      itr += 1;
+    }
+
+    agents.push_back(agent);
+
+  };
+
+
+  return 1;
 };
 
 
@@ -208,6 +354,7 @@ void Genetics::fitness(){
           agents.at(i).get_fitness_thread()
         )
       );
+      //agents.at(i).get_fitness();
     };
 
     for(auto& t : threads) t.join();
@@ -219,10 +366,21 @@ void Genetics::fitness(){
 
 
 
+int Genetics::add_agent_to_vector(AGENTS &agents, Agent &agent){
+  int len_agents = agents.size();
+  loop(i, len_agents){
+    if(agents[i].ID == agent.ID)
+      return 0;
+  };
+  agents.push_back(agent);
+};
+
+
+
 void Genetics::create_new_generation(){
 
   AGENTS result, offspring, successors;
-  
+
   successors.push_back(agents.at(0));
 
   loop(i,(int)(population/(num_of_children+2))){
@@ -233,8 +391,10 @@ void Genetics::create_new_generation(){
     parent1 = best_fit_selection();
     parent2 = best_fit_selection();
 
-    successors.push_back(parent1);
-    successors.push_back(parent2);
+    add_agent_to_vector(successors, parent1);
+    add_agent_to_vector(successors, parent2);
+    //successors.push_back(parent1);
+    //successors.push_back(parent2);
 
     loop(j,(num_of_children/2)){
 
@@ -349,7 +509,7 @@ string Genetics::get_time(int start, int end){
   time_average = (time_average + latest)/2;
   elapsed      = (time_start - end);
   estimated    = (time_average*100);
-  
+
   string a,b,c;
   a = mth::dbl_to_s(   ((double)latest/1000),2);
   b = mth::dbl_to_s(  ((double)elapsed/1000),2);

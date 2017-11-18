@@ -36,6 +36,17 @@ BRAIN brain::create(int num_neurons){
 
 
 
+void brain::reset(BRAIN &brain){
+  int len_brain = brain.size();
+  loop(i, len_brain){
+    NEURON* neuron = &brain.at(i);
+    (*neuron).at(SUM)   = 0;
+    (*neuron).at(REACT) = 0;
+  };
+};
+
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // brain::get_str
 ////////////////////////////////////////////////////////////////////////////////
