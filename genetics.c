@@ -173,8 +173,6 @@ void Genetics::run(){
   while(true){
 
     start = mth::mtime();
-    //print("Start: " << start);
-    //PAUSE;
 
     // print(" - Starting fitness");
   
@@ -344,8 +342,6 @@ string Genetics::get_str(){
 
 string Genetics::get_time(int start, int end){
 
-  print("Start: " << start << ", End: " << end );
-
   int latest, elapsed, estimated;
   string result;
 
@@ -358,8 +354,6 @@ string Genetics::get_time(int start, int end){
   a = mth::dbl_to_s(   ((double)latest/1000),2);
   b = mth::dbl_to_s(  ((double)elapsed/1000),2);
   c = mth::dbl_to_s(((double)estimated/1000),2);
-
-  print("A: " << a << ", B: " << b <<  ", C: " << c);
 
   result += " +\n";
   result += " Latest Stopwatch: " + a + "sec, ";
