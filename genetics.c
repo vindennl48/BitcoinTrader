@@ -5,7 +5,8 @@
 #include <algorithm>
 #include <thread>
 #include "genetics.h"
-#include "definitions.h"
+//#include "definitions.h"
+#include "mth.h"
 
 using namespace std;
 
@@ -71,7 +72,7 @@ string Agent::get_str(){
   string result;
 
   result += " - ID: " + to_string(ID);
-  result += ", My Fitness: " + dbl_to_s(fitness, 2);
+  result += ", My Fitness: " + mth::dbl_to_s(fitness, 2);
 
   return result;
 
@@ -152,7 +153,7 @@ Genetics::Genetics(int pop, int num_children, double chance){
   chance_amount   = chance;
 
   // Time Vars
-  time_start      = clock();
+  time_start      = mth::mtime();
   time_average    = 0;
   num_of_children = num_of_children;
 
@@ -166,12 +167,14 @@ void Genetics::run(){
 
   print(" - Running Algorithm");
 
-  clock_t start, end;
+  int start, end;
 
   int generation = 0;
   while(true){
 
-    start = clock();
+    start = mth::mtime();
+    //print("Start: " << start);
+    //PAUSE;
 
     // print(" - Starting fitness");
   
@@ -184,7 +187,7 @@ void Genetics::run(){
 
     create_new_generation();
 
-    end = clock();
+    end = mth::mtime();
 
     print(get_time(start,end));
 
@@ -339,20 +342,24 @@ string Genetics::get_str(){
 
 
 
-string Genetics::get_time(clock_t start, clock_t end){
+string Genetics::get_time(int start, int end){
 
-  clock_t latest, elapsed, estimated;
+  print("Start: " << start << ", End: " << end );
+
+  int latest, elapsed, estimated;
   string result;
 
-  latest       = end-start;
+  latest       = start-end;
   time_average = (time_average + latest)/2;
-  elapsed      = (end-time_start);
+  elapsed      = (time_start - end);
   estimated    = (time_average*100);
   
   string a,b,c;
-  a = dbl_to_s(   latest/(double)(CLOCKS_PER_SEC),2);
-  b = dbl_to_s(  elapsed/(double)(CLOCKS_PER_SEC),2);
-  c = dbl_to_s(estimated/(double)(CLOCKS_PER_SEC),2);
+  a = mth::dbl_to_s(   ((double)latest/1000),2);
+  b = mth::dbl_to_s(  ((double)elapsed/1000),2);
+  c = mth::dbl_to_s(((double)estimated/1000),2);
+
+  print("A: " << a << ", B: " << b <<  ", C: " << c);
 
   result += " +\n";
   result += " Latest Stopwatch: " + a + "sec, ";

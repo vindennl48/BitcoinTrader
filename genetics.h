@@ -64,7 +64,7 @@ class Genetics{
 public:
   int     population, num_of_children;
   double  chance_amount;
-  clock_t time_start, time_average;
+  int time_start, time_average;
   AGENTS agents;
 
   Genetics(int, int, double);
@@ -74,7 +74,7 @@ public:
   void  fitness();
   void  remove_agent(AGENT &);
 
-  std::string get_time(clock_t, clock_t);
+  std::string get_time(int, int);
   std::string get_str();
 
   std::string print_output();
