@@ -1,0 +1,21 @@
+#!bin/sh
+
+echo "Removing old program..."
+rm main
+
+echo "Compiling new program..."
+g++ -o main     \
+                \
+    ./genetic_algorithm/agent_template.c  \
+    main.c      \
+                \
+    -std=c++11  \
+    -pthread
+
+
+echo "Running Program..."
+echo " "
+./main
+echo " "
+echo "Program Ended..."
+

@@ -1,0 +1,215 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+// This library consists of easy to use functions, definitions and namespaces
+// instead of having to remember so much random crap from the std library.
+//
+////////////////////////////////////////////////////////////////////////////////
+
+#ifndef MTH_H
+#define MTH_H
+
+
+#include <chrono>
+#include <iostream>
+#include <iomanip>
+#include <sstream>
+#include <vector>
+#include <string>
+#include <algorithm>
+
+
+//  DEFINITIONS
+#define loop(x,y)  for(int x = 0; x < y; x++)
+#define print(x)   std::cout << x << std::endl
+#define nprint(x)  std::cout << x
+#define round(x,y) double(int(x*(pow(10,y))))/(pow(10,y))
+#define RAND_UNIFORM ((double)(rand()%100)/100)
+#define CLEAR system("clear;clear;")
+#define PAUSE {                            \
+  int x123;                                \
+  std::cout<<"Press Enter To Continue..."; \
+  std::cin.ignore();                       \
+}
+
+#define string        std::string
+#define stringstream  std::stringstream
+#define endl          std::endl
+#define cin           std::cin
+#define cout          std::cout
+#define vector        std::vector
+#define thread        std::thread
+#define ofstream      std::ofstream
+#define ifstream      std::ifstream
+//  END DEFINITIONS
+
+
+namespace mth{
+////////////////////////////////////////////////////////////////////////////////
+  #define CHRONO std::chrono
+  inline int mtime(){
+    auto now = CHRONO::system_clock::now();
+    auto ms = CHRONO::time_point_cast<CHRONO::milliseconds>(now).time_since_epoch().count();
+    ms = ms*-1;
+    return ms;
+  };
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////////////////
+//   typedef std::stringstream stringstream;
+//   typedef std::string       string;
+
+  inline std::string dbl_to_s(double num, int precision){
+    std::string result;
+    
+    std::stringstream stream;
+    stream << std::fixed << std::setprecision(precision) << num;
+    result = stream.str();
+
+    return result;
+  };
+
+  inline std::string uppercase(std::string &x){
+    std::transform(
+      x.begin(), x.end(), x.begin(), ::toupper
+    );
+    return x;
+  };
+////////////////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////////////////
+//   template <typename T>
+//   class vector{
+// 
+//     // Members:
+//     //   vector()
+//     //   vector(vector<T>)
+//     //   vector({})
+//     //   extend(vector)
+//     //   extend(vector<T>)
+//     //   extend({})
+//     //   append(T)
+//     //   push_back(T)
+//     //   clear()
+//     //   remove(index)
+//     //   remove(object)  # add operator= overload to object
+//     //   str()
+//     //   size()
+//     //   sort(ASC/DESC)
+//     //   reverse()
+//     //   at()
+//     //   operator+       # extends vector with vector
+//     //   operator=       # sets vector contents equal to vector
+//     //   operator[]      # gets index location
+// 
+//     public:
+// 
+//     std::vector<T> v;
+// 
+//     inline vector(){};
+//     inline vector(const std::vector<T>& new_v){
+//       v.insert(
+//         v.end(),
+//         new_v.begin(),
+//         new_v.end()
+//       );
+//     };
+//     inline vector(const T new_v[]){
+//       loop(i,new_v.size()){
+//         v.push_back(new_v[i]);
+//       };
+//     };
+// 
+//     inline void extend(const vector& new_v){
+//       v.insert(
+//         v.end(),
+//         new_v.v.begin(),
+//         new_v.v.end()
+//       );
+//     };
+//     inline void extend(const std::vector<T>& new_v){
+//       v.insert(
+//         v.end(),
+//         new_v.begin(),
+//         new_v.end()
+//       );
+//     };
+//     inline void extend(const T add_v[]){
+//       loop(i,add_v.size()){
+//         v.push_back(add_v[i]);
+//       };
+//     };
+// 
+//     inline void append(const T& obj){ v.push_back(obj); };
+//     inline void push_back(const T& obj){ v.push_back(obj); };
+// 
+//     inline void clear(){ v.clear(); };
+// 
+//     //inline void remove(const int& i){ v.erase(v.begin() + i); };
+//     //inline void remove(const T& obj){
+//     //  int len_v = v.size();
+//     //  loop(i, len_v){
+//     //    if(v.at(i) == obj){
+//     //      v.erase(i);
+//     //      break;
+//     //    };
+//     //  };
+//     //};
+// 
+//     inline std::string str() const {
+//       std::stringstream result;
+// 
+//       int len_v = size();
+//       loop(i,len_v){
+//         result << "[" << i << "] " << v.at(i) << "\n";
+//       };
+//       return result.str();
+//     };
+// 
+//     inline int size() const { return v.size(); };
+// 
+//     #define ASC  0
+//     #define DESC 1
+//     inline void sort(int type){
+//       if(type == 0){
+//         sort(v.begin(), v.end());
+//       }
+//       else if(type == 1){
+//         sort(v.begin(), v.end());
+//         reverse(v.begin(), v.end());
+//       };
+//     };
+//     inline void reverse(){ reverse(v.begin(), v.end()); };
+// 
+//     inline T& at(int i){ return v.at(i); };
+//     inline T at(int i) const { return v.at(i); };
+// 
+//     inline vector operator + (const vector& new_v){
+//       vector<T> result(v);
+//       result.extend(new_v);
+//       return result;
+//     };
+//     inline void operator = (const vector& new_v){
+//       clear();
+//       extend(new_v);
+//     };
+//     inline bool operator == (const vector& new_v){
+//       int len_v = size();
+//       int len_new_v = new_v.size();
+// 
+//       if(len_v != len_new_v){ return false; };
+//       loop(i, len_v){ if(v.at(i) != new_v.at(i)){ return false; }; };
+//       return true;
+//     };
+//     inline T& operator [](int i){ return v.at(i); };
+//     inline T operator [](int i) const { return v.at(i); };
+// 
+//   };
+// ////////////////////////////////////////////////////////////////////////////////
+// 
+// };
+
+
+#endif
