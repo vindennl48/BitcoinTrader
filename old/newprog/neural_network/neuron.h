@@ -5,21 +5,25 @@
 
 
 struct Neuron{
+private:
+  mutex  *m;
 
+public:
   int    index_id;
   int    length;
   double sum;
   double react;
 
   v(Neuron*) neighbors;
-  v(double) weights;
+  v(double)  weights;
 
   inline Neuron(int index_id, int length)
   : index_id(index_id),
     sum(0),
     react(0),
     length(length),
-    weights(length){
+    weights(length),
+    m(new mutex()){
 
     reset_weights();
 
@@ -31,7 +35,7 @@ struct Neuron{
     sum(0),
     react(0),
     length(length),
-    weights(length){};
+    weights(weights){};
 
   inline void set_neighbors(v(Neuron*) neurons){
     neighbors = neurons;
@@ -60,14 +64,20 @@ struct Neuron{
 
         if(index_id != i){
           Neuron* neuron = neighbors.at(i);
-          double* sum    = &neuron->sum;
-          *sum += react * w;
+          // double* sum    = &neuron->sum;
+          // *sum += react * w;
+          neuron->add_to_sum(react * w);
         };
 
         i++;
       };
 
     };
+  };
+
+  inline void add_to_sum(double value){
+    //lock_guard<mutex> lock(m);
+    sum += value;
   };
 
   inline string get_str(){

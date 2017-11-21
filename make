@@ -1,6 +1,22 @@
 #!bin/sh
 
+clear;clear
+echo "Removing old program..."
 rm main
-g++ -o main genetics.c brain.c termgui.c fancyout.c main.c -std=c++11 -pthread
+
+echo "Compiling new program..."
+g++ -o main     \
+                \
+    main.c      \
+                \
+    -std=c++11  \
+    -pthread    \
+    -O0
+
+
+echo "Running Program..."
+echo " "
 ./main
+echo " "
+echo "Program Ended..."
 

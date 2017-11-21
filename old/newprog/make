@@ -1,5 +1,6 @@
 #!bin/sh
 
+clear;clear;
 echo "Removing old program..."
 rm main
 
@@ -10,7 +11,8 @@ g++ -o main     \
     main.c      \
                 \
     -std=c++11  \
-    -pthread
+    -pthread    \
+    -O0
 
 
 echo "Running Program..."

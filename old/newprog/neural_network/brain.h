@@ -4,6 +4,10 @@
 #include "neuron.h"
 #include "../bin/mth.h"
 
+inline void process_thread( Neuron &neuron ){
+  neuron.fire();
+};
+
 struct Brain{
 
   int        length;
@@ -25,10 +29,17 @@ struct Brain{
 
   inline void run(int iter=2){
     loop(j, iter){
+      v(thread) threads;
+
       for(auto& n : neurons)
         n.prepare();
       for(auto& n : neurons)
-        n.fire();
+        threads.push_back(
+          thread(process_thread, ref(n))
+        );
+        //n.fire();
+
+      for(auto& t : threads) t.join();
     };
   };
 
@@ -44,7 +55,7 @@ struct Brain{
     int len = length - 1;
     loop(i, num_outputs){
       Neuron* neuron = &neurons[len-i];
-      neuron->prepare();
+       neuron->prepare();
       result[i] = neuron->react;
     };
 

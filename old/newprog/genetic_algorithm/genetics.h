@@ -46,25 +46,9 @@ public:
   };
 
   inline void fitness(){
-    vector<thread> threads;
-
     int len_agents = agents.size();
-    int j = 0;
-    loop(i, len_agents){
-
-      if(j == MAX_THREADS){
-        for(auto& t : threads) t.join();
-        threads.clear();
-        j = 0;
-      };
-
-      threads.push_back(thread(
-        agents[i].get_fitness_thread()
-      ));
-      
-      j++;
-    };
-    for(auto& t : threads) t.join();
+    loop(i, len_agents)
+      agents[i].get_fitness();
 
     sort(agents.begin(), agents.end());
     reverse(agents.begin(), agents.end());
