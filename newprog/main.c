@@ -7,13 +7,13 @@
 
 // SETTINGS
 ////////////////////////////////////////////////////////////////////////////////
-const int     NUM_NEURONS    = 200;
+const int     NUM_NEURONS    = 35;
 const int     POPULATION     = 20;
 const double  MUTATE_CHANCE  = 0.6;
 const double  BATTLE_CHANCE  = 0.05;
 
 const int     MAX_THREADS    = 10;
-const int     NUM_CANDLES    = 1000;
+const int     NUM_CANDLES    = 100;
 Candles       CANDLES;
 ////////////////////////////////////////////////////////////////////////////////
 
