@@ -1,30 +1,102 @@
+
+/*  
+ * brain:
+ *   neuron 1:
+ *     add to neuron 2
+ *     add to neuron 3
+ *     add to neuron 4
+ *   neuron 2:
+ *     add to neuron 1
+ *     add to neuron 3
+ *     add to neuron 4
+ *   neuron 3:
+ *     add to neuron 1
+ *     add to neuron 2
+ *     add to neuron 4
+ *   neuron 4:
+ *     add to neuron 1
+ *     add to neuron 2
+ *     add to neuron 3
+ *
+ * 1 neuron at a time -> threadpool
+ *   - calculations get separated into n number of queues for n
+ *     number of threads.
+ *   - threads process their queue.
+ * repeat with rest of neurons.
+ *
+ * 
+ * */
+
+#ifndef NEURON_H
+#define NEURON_H
+
 #include "mth.h"
 
 
-struct Neuron{
-private:                                               // VARIABLES
-  Mutex *m;
+//////////////////////////
+#define NTHREADS    4
+//////////////////////////
+#ifndef NTHREADS
+extern const int NTHREADS;
+#endif
+//////////////////////////
 
-  int*    index_id;
-  int*    length;
-  double* sum;
-  double* react;
 
-  v(Neuron*) *neighbors;
-  v(double*) *weights;
+struct Neuron{                                         // STRUCT NEURON
+private:
+
+  Mutex       *m;
+  int*        index_id;
+  static int* length;
+  double*     sum;
+  double*     react;
+
+  v(Neuron*)* neighbors;
+  v(double*)* weights;
+
+  // ThreadPool                                        // THREADPOOL
+  //////////////////////
+  static v(thread*) pool;
+  static v(v(int*)) queue;
+
+  inline static
+  void initialize_threadpool(int length){              // create_threads
+    pool.reserve(NTHREADS);
+    queue.reserve(NTHREADS);
+
+    loop(i, NTHREADS){
+      pool.push_back(new thread(
+        /*place thread here*/
+      ));
+      queue[i].reserve(length);
+      loop(j, length) queue[i][j] = new int(-1);
+    };
+
+  };
+  inline static
+  void destroy_threadpool(){                           // destroy_threads
+    for(auto& t : pool) t->join();
+    loop(i, NTHREADS){
+      delete pool[i];
+      loop(j, *length) delete queue[i][j];
+    };
+  };
+  //////////////////////
 
 public:
   inline Neuron(int index_id, int length){             // CONSTRUCTOR
     this->m         = new Mutex();
     this->index_id  = new int(index_id);
-    this->length    = new int(length);
+    Neuron::length  = new int(length);
     this->sum       = new double(0);
     this->react     = new double(0);
     this->neighbors = new v(Neuron*);
     this->weights   = new v(double*);
 
-    neighbors->reserve(length);
-    weights->reserve(length);
+    this->neighbors->reserve(length);
+    this->weights->reserve(length);
+
+    initialize_threadpool(length);
   };
 
   inline ~Neuron(){                                    // DESTRUCTOR
@@ -33,13 +105,16 @@ public:
     delete length;
     delete sum;
     delete react;
+    delete neighbors;
 
     loop(i, weights->size())
       delete weights->at(i);
+    weights->clear();
     delete weights;
+    destroy_threadpool();
   };
 
-  inline void set_neighbors(v(Neuron*) &neurons){      // set_neighbors()
+  inline void set_neighbors(v(Neuron*) neurons){      // set_neighbors()
     for(auto& n : neurons)
       neighbors->push_back(n);
   };
@@ -67,8 +142,6 @@ public:
 
         if(*index_id != i){
           Neuron* neuron = neighbors->at(i);
-          // double* sum    = &neuron->sum;
-          // *sum += react * w;
           neuron->add_to_sum(*react * *w);
         };
 
@@ -96,7 +169,7 @@ public:
     return result.str();
   };
 
-  inline string get_data(){
+  inline string get_data(){                            // get_data()
     stringstream result; 
 
     result << *index_id << endl;
@@ -110,9 +183,10 @@ public:
 };
 
 
-
+#endif
 
 
 int main(){
   return 0;
 };
+
