@@ -45,7 +45,6 @@ extern const int NTHREADS;
 struct Neuron{                                         // STRUCT NEURON
 private:
 
-  Mutex       *m;
   int*        index_id;
   static int* length;
   double*     sum;
@@ -56,17 +55,22 @@ private:
 
   // ThreadPool                                        // THREADPOOL
   //////////////////////
+  static Mutex      *m;
+  static CV         *cv;
   static v(thread*) pool;
   static v(v(int*)) queue;
+  static bool*      status;
 
   inline static
-  void initialize_threadpool(int length){              // create_threads
+  void initialize_threadpool(int length){              // create_threads()
+    status = new bool(true);
     pool.reserve(NTHREADS);
     queue.reserve(NTHREADS);
 
     loop(i, NTHREADS){
       pool.push_back(new thread(
-        /*place thread here*/
+        /*f()*/   process_thread, 
+        /*args*/  i
       ));
       queue[i].reserve(length);
       loop(j, length) queue[i][j] = new int(-1);
@@ -74,11 +78,20 @@ private:
 
   };
   inline static
-  void destroy_threadpool(){                           // destroy_threads
+  void destroy_threadpool(){                           // destroy_threads()
     for(auto& t : pool) t->join();
     loop(i, NTHREADS){
       delete pool[i];
       loop(j, *length) delete queue[i][j];
+    };
+  };
+  inline static
+  void process_thread(int id){                         // process_thread()
+    v(int*)* q = &queue[id];
+    while(*status){
+      unique_lock<Mutex> lock(*m);
+      cv->wait(lock, [q]{ return (!q->empty()); });
+      /* place process here */
     };
   };
   //////////////////////
