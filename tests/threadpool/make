@@ -1,0 +1,22 @@
+#!bin/sh
+
+clear;clear
+echo "Removing old program..."
+rm test
+
+echo "Compiling new program..."
+g++ -o test                   \
+                              \
+    threadpool_test.c         \
+                              \
+    -std=c++11                \
+    -pthread                  \
+    -O0
+
+
+echo "Running Program..."
+echo " "
+./test
+echo " "
+echo "Program Ended..."
+
