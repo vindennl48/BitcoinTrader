@@ -11,6 +11,7 @@ g++ -o main     \
                 \
     -std=c++11  \
     -pthread    \
+    -g          \
     -O0
 
 

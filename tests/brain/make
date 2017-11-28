@@ -1,0 +1,23 @@
+#!bin/sh
+
+clear;clear
+echo "Removing old program..."
+rm test
+
+echo "Compiling new program..."
+g++ -o test                   \
+                              \
+    brain_test.c              \
+                              \
+    -std=c++11                \
+    -pthread                  \
+    -g                        \
+    -O0
+
+
+echo "Running Program..."
+echo " "
+./test
+echo " "
+echo "Program Ended..."
+

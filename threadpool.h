@@ -5,7 +5,7 @@
 
 
 //////////////////////////
-#define NTHREADS    4
+#define NTHREADS    20
 //////////////////////////
 #ifndef NTHREADS
 extern const int NTHREADS;

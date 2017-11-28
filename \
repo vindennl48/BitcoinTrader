@@ -1,0 +1,171 @@
+#ifndef BRAIN_H
+#define BRAIN_H
+
+#include "mth.h"
+#include "neuron.h"
+#include "threadpool.h"
+
+struct Tobj{
+  double  react  = 0;
+  double  weight = 0;
+  Neuron* n;
+  Tobj(double new_react, double new_weight, Neuron* new_n){
+    react  = new_react;
+    weight = new_weight;
+    n      = new_n;
+  };
+};
+
+inline void
+process_thread(Tobj* t){
+  t->n->add_to_sum(t->react * t->weight);
+};
+
+
+class Brain{
+public:
+  int               num_neurons;
+  v(Neuron*)        neurons;
+  ThreadPool<Tobj*> pool;
+
+  inline
+  Brain(int num_neurons)
+  : num_neurons(num_neurons),
+    pool(process_thread){
+
+    loop(i, num_neurons)
+      neurons.push_back(new Neuron(i, num_neurons));
+    loop(i, num_neurons)
+      neurons[i]->set_neighbors(neurons);
+  };
+  inline
+  ~Brain(){
+    loop(i, num_neurons)
+      delete neurons[i];
+    neurons.clear();
+  };
+
+  inline void
+  run(int iterations=2){
+    print("hey a");
+    loop(k, iterations){
+      print("hey 1");
+      for(auto* n : neurons)
+        n->prepare();
+
+      v(Tobj*) tobjects;
+      for(auto* n : neurons){
+        double* r = n->react;
+        loop(i, num_neurons){
+          if(n->index_id != neurons[i]->index_id){
+            double* w = n->weights[i];
+            tobjects.push_back(new Tobj(*r, *w, neurons[i]));
+          };
+        };
+      };
+      pool.add_to_queue(tobjects);
+      pool.join();
+
+      for(auto* o : tobjects)
+        delete o;
+      tobjects.clear();
+      print("hey 2");
+    };
+    print("hey end:a");
+  };
+
+  inline void 
+  input(v(double) &x){
+    int len_x = x.size();
+    loop(i, len_x)
+      *neurons[i]->sum = x[i];
+  };
+
+  inline v(double) 
+  output(int num_outputs){
+    v(double) result(num_outputs);
+
+    int len = num_neurons - 1;
+    loop(i, num_outputs){
+      Neuron* neuron = neurons[len-i];
+        neuron->prepare();
+      result[i] = *neuron->react;
+    };
+
+    return result;
+  };
+
+  inline void
+  reset(){
+    for(auto* n : neurons){
+      n->sum   = 0;
+      n->react = 0;
+    };
+  };
+
+  inline 
+  string get_str(){
+    stringstream result;
+    result << "--" << endl;
+
+    for(auto* n : neurons)
+      result << "| " << n->get_str() << endl;
+
+    result << "--" << endl;
+    return result.str();
+  };
+
+  inline string get_data(){
+    stringstream result;
+    result << num_neurons << endl;
+
+    for(auto* n : neurons)
+      result << n->get_data();
+    result << "end brain" << endl;
+
+    return result.str();
+  };
+
+  inline void load_data(v(string) data){
+
+    num_neurons = stoi(data[0]);
+    neurons.clear();
+
+    int len_data = data.size();
+    int itr = 1;
+    while(data[itr] != "end brain"){
+
+      int        x = 0;
+      int        n_index_id;
+      v(double*) n_weights;
+
+      while(data[itr] != "end neuron"){
+        if(x == 0){
+          n_index_id = stoi(data[itr]);
+          x++;
+        }
+        else
+          n_weights.push_back(
+            new double( stod(data[itr]) )
+          );
+        itr++;
+      };
+
+      neurons.push_back(
+        new Neuron(n_index_id, num_neurons/*, n_weights*/)
+      );
+
+      itr++;
+
+    };
+
+    for(auto* n : neurons)
+      n->set_neighbors(neurons);
+
+  };
+
+};
+
+
+
+#endif
