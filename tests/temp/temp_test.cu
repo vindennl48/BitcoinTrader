@@ -20,8 +20,8 @@ int main(){
   a = 2;
   b = 7;
 
-  cudamemcpy(d_a, &a, size, cudaMemcpyHostToDevice);
-  cudamemcpy(d_b, &b, size, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_a, &a, size, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_b, &b, size, cudaMemcpyHostToDevice);
 
   add<<<1,1>>>(d_a, d_b, d_c);
 
