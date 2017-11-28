@@ -4,39 +4,30 @@
 #include <math.h>
 
 __global__
-void add(int N, double *x, double*y)
-{
-  for (int i = 0; i < N; i++)
-    y[i] = x[i] + y[i];
+void add(int *a, int *b, int *c){
+  *c = *a + *b;
 }
 
-int main()
-{
-  int N = 1<<20;
-  double a = 5;
-  double *x, *y;
+int main(){
+  int a, b, c;
+  int *d_a, *d_b, *d_c;
+  int size = sizeof(int);
 
-  cudaMallocManaged(&x, N*sizeof(double));
-  cudaMallocManaged(&y, N*sizeof(double));
+  cudaMalloc((void **)&d_a, size);
+  cudaMalloc((void **)&d_b, size);
+  cudaMalloc((void **)&d_c, size);
 
-  for (int i = 0; i < N; i++)
-  {
-    x[i] = 1.0;
-    y[i] = 2.0;
-  }
+  a = 2;
+  b = 7;
 
-  x[0] = &a;
+  cudamemcpy(d_a, &a, size, cudaMemcpyHostToDevice);
+  cudamemcpy(d_b, &b, size, cudaMemcpyHostToDevice);
 
-  add<<<1, 1>>>(N, x, y);
-  cudaDeviceSynchronize();
+  add<<<1,1>>>(d_a, d_b, d_c);
 
-  double maxError = 0.0;
-  for (int i = 0; i < N; i++)
-    maxError = fmax(maxError, fabs(y[i]-3.0));
-  std::cout << "Max error: " << maxError << std::endl;
+  cudaMemcpy(&c, d_c, size, cudaMemcpyDeviceToHost);
 
-  cudaFree(x);
-  cudaFree(y);
+  cudaFree(d_a); cudaFree(d_b); cudaFree(d_c);
 
   return 0;
 }
