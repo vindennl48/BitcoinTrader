@@ -1,45 +1,52 @@
-// first cuda program
-
 #include <iostream>
 #include <math.h>
+#include "../../mth.h"
 
+typedef unsigned long int INT;
+
+
+// block size and amount
+#define T     1024
+#define B(x)  (x+T-1)/T
+
+
+// Kernel
+////////////////////////////////////////////////////////////////////////////////
 __global__
-void add(int *a, int *b, int *c){
-  c[threadIdx.x] = a[threadIdx.x] + b[threadIdx.x];
-}
+void add(INT *a, INT *b, INT *c, INT size){
+  INT index = threadIdx.x + blockDim.x * blockIdx.x;
+  if(index < size)
+    c[index] = a[index] + b[index];
+  //for(INT i=0; i<size; i+=1)
+  //  c[i] = a[i] + b[i];
+};
+////////////////////////////////////////////////////////////////////////////////
 
-#define N 512
 
 int main(){
-  int *a, *b, *c;
-  int *d_a, *d_b, *d_c;
-  int size = N*sizeof(int);
+  INT N = /*elements*/ 2048*2048*10;
+  cArray<INT> a(N), b(N), c(N);
 
-  cudaMalloc((void **)&d_a, size);
-  cudaMalloc((void **)&d_b, size);
-  cudaMalloc((void **)&d_c, size);
-
-  a = (int *)malloc(size);
-  b = (int *)malloc(size);
-
-  for(int i=0; i<N; i+=1){
-    a[i] = i;
-    b[i] = i;
+  for(INT i=0; i<N; i+=1){
+    a.h[i] = i;
+    b.h[i] = i;
   }
 
-  cudaMemcpy(d_a, &a, size, cudaMemcpyHostToDevice);
-  cudaMemcpy(d_b, &b, size, cudaMemcpyHostToDevice);
+  INT start = mtime();
+  a.send(); b.send();
+  add<<<B(N),T>>>(a.d, b.d, c.d, N);
+  c.receive();
+  INT end = mtime();
 
-  add<<<1,N>>>(d_a, d_b, d_c);
+  print("\n" << "Elapsed Time: " << (start-end) << "ms" << "\n");
 
-  cudaMemcpy(c, d_c, size, cudaMemcpyDeviceToHost);
 
-  free(a);
-  free(b);
-  free(c);
+  for(INT i=(N-10); i<N; i+=1)
+    std::cout << a.h[i] << ", ";
+  std::cout << std::endl;
 
-  cudaFree(d_a); cudaFree(d_b); cudaFree(d_c);
-
+  for(INT i=(N-10); i<N; i+=1)
+    std::cout << c.h[i] << ", ";
 
   return 0;
 }

@@ -7,9 +7,9 @@ rm test
 echo "Compiling new program..."
 nvcc -o test                  \
                               \
-    temp_test.cu             # \
-#                              \
-#    -std=c++11                \
+    temp_test.cu              \
+                              \
+    -std=c++11                \
 #    -pthread                  \
 #    -g                        \
 #    -O0

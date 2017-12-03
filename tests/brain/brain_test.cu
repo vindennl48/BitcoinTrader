@@ -1,12 +1,11 @@
 #include "../../brain.h"
 
 
-bool test_constructor_destructor(int x){
+void test_constructor_destructor(int x){
   print("\nStarted: \"test_constructor_destructor()\"");
 
   Brain brain(x);
-  brain.run(100);
-  print(brain.get_str());
+  brain.run(2000);
 
   print("Finished: \"test_constructor_destructor()\"\n");
 };
@@ -18,11 +17,13 @@ int main(){
 
   int start, end;
 
+  Brain brain(num_neurons);
   start = mtime();
-  test_constructor_destructor(num_neurons);
+  //test_constructor_destructor(num_neurons);
+  brain.run(2000);
   end = mtime();
 
-  print("Time Elapsed: " << dbl_to_s((double)(start-end)/1000, 2) << "sec");
+  print("Time Elapsed: " << (start-end) << "ms");
 
   return 0;
 };

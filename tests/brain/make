@@ -5,14 +5,14 @@ echo "Removing old program..."
 rm test
 
 echo "Compiling new program..."
-g++ -o test                   \
+nvcc -o test                  \
                               \
-    brain_test.c              \
+    brain_test.cu             \
                               \
-    -std=c++11                \
-    -pthread                  \
-    -g                        \
-    -O0
+    -std=c++11                #\
+#   -pthread                  \
+#   -g                        \
+#   -O0
 
 
 echo "Running Program..."
