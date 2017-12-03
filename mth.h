@@ -1,1 +1,0 @@
-/home/mitchellwoodbine/Documents/github/mth/mth.h
