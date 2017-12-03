@@ -1,4 +1,5 @@
 #include "../../brain.h"
+#include "../../addArray.h"
 
 
 void test_constructor_destructor(int x){
@@ -13,18 +14,28 @@ void test_constructor_destructor(int x){
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 int main(){
-  int num_neurons = 300;
 
-  int start, end;
+  int N = 5000;
+  cArray<int> a(N);
+  loop(i, N)
+    a.h[i] = i;
 
-  Brain brain(num_neurons);
-  start = mtime();
-  //test_constructor_destructor(num_neurons);
-  brain.run(2000);
-  end = mtime();
+  int result = addArray<int>(N, a);
+  print("Result: " << result);
 
-  print("Time Elapsed: " << (start-end) << "ms");
 
-  return 0;
+  // int num_neurons = 300;
+
+  // int start, end;
+
+  // Brain brain(num_neurons);
+  // start = mtime();
+  // //test_constructor_destructor(num_neurons);
+  // brain.run(2000);
+  // end = mtime();
+
+  // print("Time Elapsed: " << (start-end) << "ms");
+
+  // return 0;
 };
 
