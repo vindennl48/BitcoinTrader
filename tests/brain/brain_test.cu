@@ -1,26 +1,27 @@
-#include "../../brain.h"
+//#include "../../brain.h"
+#include "../../mth.h"
 #include "../../addArray.h"
 
 
-void test_constructor_destructor(int x){
-  print("\nStarted: \"test_constructor_destructor()\"");
-
-  Brain brain(x);
-  brain.run(2000);
-
-  print("Finished: \"test_constructor_destructor()\"\n");
-};
+// void test_constructor_destructor(int x){
+//   print("\nStarted: \"test_constructor_destructor()\"");
+// 
+//   Brain brain(x);
+//   brain.run(2000);
+// 
+//   print("Finished: \"test_constructor_destructor()\"\n");
+// };
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 int main(){
 
   int N = 5000;
-  cArray<int> a(N);
+  cArray<int> arr(N);
   loop(i, N)
-    a.h[i] = i;
+    arr.h[i] = i;
 
-  int result = addArray<int>(N, a);
+  int result = addArray<int>(N, arr);
   print("Result: " << result);
 
 

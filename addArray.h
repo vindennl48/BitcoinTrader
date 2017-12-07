@@ -1,3 +1,7 @@
+#ifndef ADD_ARRAY_H
+#define ADD_ARRAY_H
+
+
 /*
  * 
  * This function will add an array with cuda.. somehow..
@@ -6,16 +10,15 @@
 
 #include "mth.h"
 
-
 template <typename T>
 __global__
 void cuda_addArray(int N, T *arr){
   int i  = GET_INDEX;
-
+ 
   while(true){
     int half_n = N/2;
-    if(index <= half_n){
-      int i2 = half_n+index;
+    if(i <= half_n){
+      int i2 = half_n+i;
       arr[i] += arr[i2];
       N = half_n;
     }
@@ -27,7 +30,7 @@ void cuda_addArray(int N, T *arr){
 
 template <typename T>
 inline T
-addArray(int N, cArray<T> &arr){
+addArray(int N, cArray<T> &a){
 
   // Find if array is divisible
   unsigned int remainder = 0;
@@ -39,20 +42,24 @@ addArray(int N, cArray<T> &arr){
     };
   };
 
+  print("Remainder: " << remainder);
 
   // Add remainders to last divisible num
   int x = N-remainder;
   for(int i=0; i<remainder; i+=1)
-    arr.h[x-1] += arr.h[x+i];
+    a.h[x-1] += a.h[x+i];
 
   // Reset N to divisible num
   N -= remainder;
 
   // Run kernel to add array
-  arr.send();
-  addArray<<<B(N),1024>>>(N, arr.d);
-  arr.receive();
+//  a.send();
+//  cuda_addArray<T><<<BLOCKS(N),THREADS>>>(N, a.d);
+//  a.receive();
 
   // Return value
-  return arr.h[0];
+  return a.h[0];
 };
+
+
+#endif
