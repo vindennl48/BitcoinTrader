@@ -5,8 +5,8 @@
 
 
 #include "../../mth.h"
-#include "Candles.h"
-#include "Agent.h"
+#include "candles.h"
+#include "agent.h"
 
 int main(){
 

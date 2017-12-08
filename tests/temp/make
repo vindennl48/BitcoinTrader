@@ -1,23 +1,17 @@
-#!bin/sh
+#!/bin/sh
+
+NAME=main
 
 clear;clear
 echo "Removing old program..."
-rm test
+rm $NAME
 
 echo "Compiling new program..."
-nvcc -o test                  \
-                              \
-    temp_test.cu              \
-                              \
-    -std=c++11                \
-#    -pthread                  \
-#    -g                        \
-#    -O0
-
+make
 
 echo "Running Program..."
 echo " "
-./test
+./$NAME
 echo " "
 echo "Program Ended..."
 

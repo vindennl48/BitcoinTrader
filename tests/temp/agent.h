@@ -18,7 +18,7 @@
 
 
 #include "../../mth.h"
-#include "Kernels.h"
+#include "kernels.h"
 
 
 struct Agent{
