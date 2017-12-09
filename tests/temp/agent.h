@@ -33,7 +33,8 @@ struct Agent{
   cArray<double> *candles;
 
   inline 
-  Agent(UINT ID, UINT num_neurons, cArray<double> *in_candles, UINT num_candles, UINT options=2)
+  Agent(UINT ID, UINT num_neurons, cArray<double> *in_candles,
+    UINT num_candles, UINT options=2)
     :sums   (cArray<double>(num_neurons)),
      reacts (cArray<double>(num_neurons)),
      weights(cArray<double>(pow(num_neurons,2))),
@@ -48,32 +49,24 @@ struct Agent{
 
       /* create a random brain */
       loop(i, num_neurons){
-        sums.h[i]   = 0;
-        reacts.h[i] = 0;
+        sums[i]   = 0;
+        reacts[i] = 0;
       };
       loop(i, pow(num_neurons,2))
-        weights.h[i] = ((double)(rand()%200)-100)/100;
+        weights[i] = ((double)(rand()%200)-100)/100;
 
-      *fitness.h = 100.00;
+      fitness[0] = 100.00;
       loop(i, 4)
-        trade.h[i] = 0;
+        trade[i] = 0;
     }
   };
 
   inline void 
-  send(){
-    sums.send();
-    reacts.send();
-    weights.send();
-    trade.send();
-    fitness.send();
-  };
+  send(){ sums.send(); reacts.send(); weights.send();
+    trade.send(); fitness.send(); };
 
   inline void 
-  receive(){
-    //sums.receive();
-    fitness.receive();
-  };
+  receive(){ fitness.receive(); };
 
   inline void
   get_fitness(){
@@ -98,40 +91,19 @@ struct Agent{
         num_neurons,
         i, 4
       );
-      fitness.receive();
-      trade.receive();
-      nprint("Candle Close: " << candles->h[i*4+CLOSE] << " | ");
-      print("fitness: " << *fitness.h << ", " << trade.h[0] << ", " << trade.h[1] 
-        << ", "  << trade.h[2] << ", "  << trade.h[3]);
-      if(sw)
-        PAUSE;
-      if(*fitness.h <=0){
-        print("Function lost all money");
-        sw = true;
-      };
+      // fitness.receive();
+      // trade.receive();
+      // nprint("Candle Close: " << candles->h[i*4+CLOSE] << " | ");
+      // print("fitness: " << fitness[0] << ", " << trade[0] << ", " << trade[1] 
+      //   << ", "  << trade[2] << ", "  << trade[3]);
+      // if(sw)
+      //   PAUSE;
+      // if(fitness[0] <=0){
+      //   print("Function lost all money");
+      //   sw = true;
+      // };
     };
   };
-
-  // inline
-  // Agent(const Agent &source)
-  //   :sums   (cArray<double>(source.num_neurons)),
-  //    reacts (cArray<double>(source.num_neurons)),
-  //    weights(cArray<double>(source.weights)),
-  //    fitness(cArray<double>(1)),
-  //    trade  (cArray<double>(4)),
-  //    candles(source.candles),
-  //    num_neurons(source.num_neurons),
-  //    num_candles(source.num_candles),
-  //    agentID(source.agentID)
-  // {
-  //   loop(i, 4)
-  //     trade.h[i] = 0;
-  //   loop(i, num_neurons){
-  //     sums.h[i]   = 0;
-  //     reacts.h[i] = 0;
-  //   };
-  //   *fitness.h = 100;
-  // };
 
 };
 
