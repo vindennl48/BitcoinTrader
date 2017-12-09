@@ -16,7 +16,6 @@
 
 #define AGENT_RANDOM  2
 
-
 #include "../../mth.h"
 #include "kernels.h"
 
