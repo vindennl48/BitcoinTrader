@@ -1,4 +1,7 @@
+#define USING_CUDA
+
 #include "../../mth.h"
+#include "idxer.h"
 
 // GLOBAL VARS
 //#define THREADS   (1<<7)  /* 7=128, 8=256, 9=512, 10=1024 */
@@ -28,45 +31,29 @@ struct Agent{
   };
 };
 
-struct SB{
-  cArray< cArray<double> > neurons;
-  SB():neurons(Nn){
-    loop(i, Nn){
-      neurons[i] = cArray<double>(Nn);
-      loop(j, Nn)
-        neurons[i][j] = 0;
-    };
-  };
-}; /*sums block*/
-
-
 #include "kernels.h"
 // #include "environment.h"
 
 int main(){
 
-  cArray<SB> sb_all(Na);
-  loop(i, Na)
-    sb_all[i] = SB();
+  cArray<double> raw_sums(Na*Np);
+  loop(i, Na*Np) raw_sums = 0;
 
   cArray<Agent> agents(Na);
-  loop(i, Na)
-    agents[i] = Agent();
+  loop(i, Na) agents[i] = Agent();
 
   // agents.send();
   // kernel_prepare<<<Na,Nn>>>(agents.d);
-  // kernel_fire<<<(Nn*Na),Nn>>>(agents.d, sb_all.send());
+  // kernel_fire<<<(Nn*Na),Nn>>>(agents.d, );
   // sb_all.receive();
 
   // agents.receive();
-  loop(i, Na){
-    loop(j, 10)
-      nprint(agents[i].neurons[j].sum[0] << ", ");
-    print("\n");
-    loop(j, 10)
-      nprint(agents[i].neurons[j].react[0] << ", ");
-    print("\n");
-  };
+
+
+
+
+
+
 
   // loop(i, Na){
   //   loop(j, Np){
