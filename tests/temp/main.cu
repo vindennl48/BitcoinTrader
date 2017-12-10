@@ -1,59 +1,63 @@
 #define USING_CUDA
-
 #include "../../mth.h"
-#include "idxer.h"
 
 // GLOBAL VARS
-//#define THREADS   (1<<7)  /* 7=128, 8=256, 9=512, 10=1024 */
-//#define CANDLES   2000
-#define Na  2        /*num agents*/
-#define Nn  (1<<7)   /*num neurons per agent*/
+#define Na  20       /*num agents*/
+#define Nn  (1<<7)   /*128: num neurons per agent*/
 #define Np  (Nn*Nn)  /*num processes per agent*/
 
 
-struct Neuron{
-  cArray<double> sum;
-  cArray<double> react;
-  cArray<double> weights;
-  Neuron():sum(1),react(1),weights(Nn){
-    sum[0]   = 1;
-    react[0] = 0;
-    loop(i, Nn)
-      weights[i] = ((double)(rand()%200)-100)/100;
-  };
+cArray<double> sums(Na*Nn);
+cArray<double> raw_sums(Na*Np);
+cArray<double> reacts(Na*Nn);
+cArray<double> weights(Na*Np);
+
+__host__ inline void
+send_agents(){
+  sums.send(); raw_sums.send();
+  reacts.send(); weights.send();
 };
 
-struct Agent{
-  cArray<Neuron> neurons;
-  Agent():neurons(Nn){
-    loop(i, Nn)
-      neurons[i] = Neuron();
+__host__ inline void
+receive_agents(){
+  sums.receive(); raw_sums.receive();
+  reacts.receive(); weights.receive();
+};
+
+__device__ inline void
+get_start_points(UINT *itr_rs, UINT *itr_w, const UINT &tidx){
+  UINT a  = (UINT)tidx/Np; UINT n = tidx-a*Nn;
+  *itr_rs = a*Nn+n;        *itr_w = a*Np+n;
+};
+
+__host__ inline void
+set_random_agents(){
+  loop(i, Na*Nn){
+    sums[i]     = 1;
+    raw_sums[i] = 0;
+    reacts[i]   = 0;
   };
+  loop(i, Na*Np)
+    weights[i]=((double)(rand()%200)-100)/100;
 };
 
 #include "kernels.h"
-// #include "environment.h"
 
 int main(){
+  set_random_agents();
+  send_agents();
 
-  cArray<double> raw_sums(Na*Np);
-  loop(i, Na*Np) raw_sums = 0;
+  loop(i, Nn) nprint(sums[i] << ", ");
+  print("\n");
 
-  cArray<Agent> agents(Na);
-  loop(i, Na) agents[i] = Agent();
+  kernel_prepare<<<Na,Nn>>>(sums.d, reacts.d);
+  receive_agents();
 
-  // agents.send();
-  // kernel_prepare<<<Na,Nn>>>(agents.d);
-  // kernel_fire<<<(Nn*Na),Nn>>>(agents.d, );
-  // sb_all.receive();
+  loop(i, Nn) nprint(sums[i] << ", ");
+  print("\n");
 
-  // agents.receive();
-
-
-
-
-
-
+  // kernel_fire<<<(Nn*Na),Nn>>>(agents.d, raw_sums.d);
+  // raw_sums.receive();
 
   // loop(i, Na){
   //   loop(j, Np){

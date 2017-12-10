@@ -3,34 +3,26 @@
 
 #include "../../mth.h"
 
-
-#ifndef Na
-#define Na  10      /*num agents*/
-#endif
-
-#ifndef Nn
-#define Nn  (1<<7)  /*num neurons per agent*/
-#endif
-
-#ifndef Np
-#define Np  (Nn*Nn) /*num processes per agent*/
-#endif
-
-
 // KERNELS
 ////////////////////////////////////////////////////////////////////////////////
-__global__
-void kernel_prepare(
-  Agent *agents
-  /*double *sums, double *reacts, double *candles, UINT ITR, UINT N*/
-){
-  UINT tidx = Idxer::idx(blockIdx.x,threadIdx.x,blockDim.x);
-  UINT aid  = blockIdx.x;
-  UINT nID  = threadIdx.x;
-  // if(tindex<N) sums[tindex] = candles[ITR*N+tindex];
-  double sum = agents[aid].neurons[nID].sum[0];
-  agents[aid].neurons[nID].react[0] = 1/(1+exp(-sum))-.5;
-  agents[aid].neurons[nID].sum[0] = 0;
+__global__ void
+kernel_prepare(double *sums, double *reacts){
+  volatile __shared__ double s_sums[Nn];
+  volatile __shared__ double s_reacts[Nn];
+
+  UINT tidx = blockIdx.x*blockDim.x+threadIdx.x;
+  UINT i    = threadIdx.x;
+  UINT itr_rs, itr_w;
+  get_start_points(&itr_rs, &itr_w, tidx);
+  s_sums[i] = sums[itr_rs];
+  __syncthreads();
+
+  s_reacts[i] = 1/(1+exp(-s_sums[i]))-.5;
+  s_sums[i]   = 0;
+  __syncthreads();
+
+  sums[i]   = s_sums[i];
+  reacts[i] = s_reacts[i];
 };
 
 
@@ -64,35 +56,30 @@ void kernel_prepare(
   *          - Weight
   *          - Weight
   * */
-__global__ void
-kernel_fire(Agent *agents, double *sb/*sums block*/){
-  volatile __shared__ double reacts[Nn];
-  volatile __shared__ double weights[Nn];
-  volatile __shared__ double sums[Nn];
-
-  UINT a  /*agent*/  = (UINT)blockIdx.x/Nn
-  UINT n1 /*neuron*/ = a*Nn+threadIdx.x;
-
-  UINT i    = threadIdx.x;
-  UINT tidx = Idxer::idx(blockIdx.x,threadIdx.x,blockDim.x);
-  UINT aid  = (UINT)tidx/Np;
-       tidx = tidx-aid*Np;
-       tidx = Idxer::col(tidx,Np);
-  UINT n2ID = i;
-  UINT nID  = tidx-n2ID*Nn;
-
-  reacts[i]  = agents[aid].neurons[n2ID].react[0];
-  weights[i] = agents[aid].neurons[n2ID].weights[nID];
-  __syncthreads();
-
-  if(nID!=n2ID)
-    sums[i] = reacts[i] * weights[i];
-  else
-    sums[i] = 0;
-  __syncthreads();
-
-  sb[tidx] = sums[i];
-};
+// __global__ void
+// kernel_fire(Agent *agents, double *sb/*sums block*/){
+//   volatile __shared__ double reacts[Nn];
+//   volatile __shared__ double weights[Nn];
+//   volatile __shared__ double sums[Nn];
+// 
+//   UINT a  /*agent*/  = (UINT)blockIdx.x/Nn;
+//   UINT n1 /*neuron*/ = a*Nn+blockIdx.x;
+//   UINT n2 /*neuron2*/= threadIdx.x;
+//   UINT i    = threadIdx.x;
+//   UINT tidx = blockIdx.x*blockDim.x+threadIdx.x;
+// 
+//   reacts[i]  = agents[a].neurons[n2].react[0];
+//   weights[i] = agents[a].neurons[n2].weights[n1];
+//   __syncthreads();
+// 
+//   if(n1!=n2)
+//     sums[i] = reacts[i] * weights[i];
+//   else
+//     sums[i] = 0;
+//   __syncthreads();
+// 
+//   sb[tidx] = sums[i];
+// };
 ////////////////////////////////////////////////////////////////////////////////
 
 
