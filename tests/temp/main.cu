@@ -47,16 +47,16 @@ int main(){
   set_random_agents();
   send_agents();
 
-  loop(i, Nn) nprint(sums[i] << ", ");
+  loop(i, Nn) nprint(reacts[i] << ", ");
   print("\n");
 
   kernel_prepare<<<Na,Nn>>>(sums.d, reacts.d);
+  kernel_fire<<<(Na*Nn),Nn>>>(sums.d, raw_sums.d, reacts.d, weights.d);
   receive_agents();
 
-  loop(i, Nn) nprint(sums[i] << ", ");
+  loop(i, Nn) nprint(raw_sums[i] << ", ");
   print("\n");
 
-  // kernel_fire<<<(Nn*Na),Nn>>>(agents.d, raw_sums.d);
   // raw_sums.receive();
 
   // loop(i, Na){

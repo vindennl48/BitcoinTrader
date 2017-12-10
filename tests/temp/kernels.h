@@ -14,6 +14,7 @@ kernel_prepare(double *sums, double *reacts){
   UINT i    = threadIdx.x;
   UINT itr_rs, itr_w;
   get_start_points(&itr_rs, &itr_w, tidx);
+
   s_sums[i] = sums[itr_rs];
   __syncthreads();
 
@@ -25,61 +26,52 @@ kernel_prepare(double *sums, double *reacts){
   reacts[i] = s_reacts[i];
 };
 
+__global__ void
+kernel_fire(double *sums, double *raw_sums,
+  double *reacts, double *weights)
+{
+  volatile __shared__ double s_raw_sums[Nn];
+  volatile __shared__ double s_reacts[Nn];
+  volatile __shared__ double s_weights[Nn];
 
-/* Agents
-  *  - Agent          (UINT)i/n
-  *    - Neurons      i-x*n;
-  *      - Neuron
-  *        - sum
-  *        - react
-  *        - Weights
-  *          - Weight
-  *          - Weight
-  *      - Neuron
-  *        - sum
-  *        - react
-  *        - Weights
-  *          - Weight
-  *          - Weight
-  *  - Agent          (UINT)i/n
-  *    - Neurons      i-x*n;
-  *      - Neuron
-  *        - sum
-  *        - react
-  *        - Weights
-  *          - Weight
-  *          - Weight
-  *      - Neuron
-  *        - sum
-  *        - react
-  *        - Weights
-  *          - Weight
-  *          - Weight
-  * */
-// __global__ void
-// kernel_fire(Agent *agents, double *sb/*sums block*/){
-//   volatile __shared__ double reacts[Nn];
-//   volatile __shared__ double weights[Nn];
-//   volatile __shared__ double sums[Nn];
-// 
-//   UINT a  /*agent*/  = (UINT)blockIdx.x/Nn;
-//   UINT n1 /*neuron*/ = a*Nn+blockIdx.x;
-//   UINT n2 /*neuron2*/= threadIdx.x;
-//   UINT i    = threadIdx.x;
-//   UINT tidx = blockIdx.x*blockDim.x+threadIdx.x;
-// 
-//   reacts[i]  = agents[a].neurons[n2].react[0];
-//   weights[i] = agents[a].neurons[n2].weights[n1];
-//   __syncthreads();
-// 
-//   if(n1!=n2)
-//     sums[i] = reacts[i] * weights[i];
-//   else
-//     sums[i] = 0;
-//   __syncthreads();
-// 
-//   sb[tidx] = sums[i];
-// };
+  UINT tidx = blockIdx.x*blockDim.x+threadIdx.x;
+  UINT i    = threadIdx.x;
+  UINT itr_rs, itr_w;
+  get_start_points(&itr_rs, &itr_w, tidx);
+  __syncthreads();
+
+  s_reacts[i]   = reacts[itr_rs];
+  // s_weights[i]  = weights[itr_w];
+  // s_raw_sums[i] = reacts[i] * weights[i];
+  s_raw_sums[i] = tidx;
+  __syncthreads();
+
+  raw_sums[i] = s_raw_sums[i];
+
+
+
+  // if(tidx != itr_rs)
+  //   s_raw_sums[i] = s_reacts[i] * weights[i];
+  // __syncthreads();
+
+  // UINT a  /*agent*/  = (UINT)blockIdx.x/Nn;
+  // UINT n1 /*neuron*/ = a*Nn+blockIdx.x;
+  // UINT n2 /*neuron2*/= threadIdx.x;
+  // UINT i    = threadIdx.x;
+  // UINT tidx = blockIdx.x*blockDim.x+threadIdx.x;
+
+  // reacts[i]  = agents[a].neurons[n2].react[0];
+  // weights[i] = agents[a].neurons[n2].weights[n1];
+  // __syncthreads();
+
+  // if(n1!=n2)
+  //   sums[i] = reacts[i] * weights[i];
+  // else
+  //   sums[i] = 0;
+  // __syncthreads();
+
+  // sb[tidx] = sums[i];
+};
 ////////////////////////////////////////////////////////////////////////////////
 
 
