@@ -7,11 +7,16 @@ cArray<double> sums(Na*Nn);
 cArray<double> raw_sums(Na*Np);
 cArray<double> reacts(Na*Nn);
 cArray<double> weights(Na*Np);
+cArray<double> data(Nd*Ndp);
+cArray<double> fit_scores(Na);
+cArray<double> trades(Na*4)
+
 
 __host__ inline void
 send_agents(){
   sums.send(); raw_sums.send();
   reacts.send(); weights.send();
+  data.send();
 };
 
 __host__ inline void
@@ -25,13 +30,19 @@ receive_agents(){
 __host__ inline void
 set_random_agents(){
   loop(i, Na*Nn){
-    sums[i]     = 1;
+    sums[i]     = 0;
     reacts[i]   = 0;
   };
   loop(i, Na*Np){
     raw_sums[i] = 0;
     weights[i]  = ((double)(rand()%200)-100)/100;
   };
+};
+
+__host__ inline void
+set_random_data(){
+  loop(i, Nd*Ndp)
+    data[i] = ((double)(rand()%200)-100);
 };
 
 __host__ __device__ inline void
@@ -124,6 +135,45 @@ kernel_add(double *sums, double *raw_sums){
       sums[n+Nn*(Na/2)] = sums2[0];
   };
 };
+__global__ void
+kernel_set_inputs(double *sums, double *data, int d_i){
+  UINT i = threadIdx.x;
+  UINT tidx = blockIdx.x*blockDim.x+threadIdx.x;
+  if(i<Ndp) sums[tidx] = data[d_i+i];
+};
+__global__ void
+kernel_set_trading(){
+};
+
+
+
+// Functions
+////////////////////////////////////////////////////////////////////////////////
+inline void
+agents_prepare(){ kernel_prepare<<<Na,Nn>>>(sums.d, reacts.d); };
+inline void
+agents_fire(){ kernel_fire<<<(Na*Nn),Nn>>>(sums.d, raw_sums.d, reacts.d, weights.d); };
+inline void
+agents_add(){ kernel_add<<<(Na*Nn)/2,Nn>>>(sums.d, raw_sums.d); };
+
+int data_i=0;
+inline void
+agents_set_inputs(){
+  kernel_set_inputs<<<Na,Nn>>>(sums.d, data.d, data_i);
+  data_i += Ndp;
+  if(data_i >= Ndp*Nd)
+    data_i = 0;
+};
+
+inline void
+agents_run_generation(){ 
+  agents_set_inputs();
+  agents_prepare();
+  agents_fire();
+  agents_add();
+};
+
+////////////////////////////////////////////////////////////////////////////////
 
 
 #endif
