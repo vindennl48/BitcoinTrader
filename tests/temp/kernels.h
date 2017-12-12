@@ -37,6 +37,8 @@ set_random_agents(){
     raw_sums[i] = 0;
     weights[i]  = ((double)(rand()%200)-100)/100;
   };
+  loop(i, Na*4) trades[i]     = 0;
+  loop(i, Na)   fit_scores[i] = 100;
 };
 
 __host__ inline void
@@ -142,9 +144,35 @@ kernel_set_inputs(double *sums, double *data, int d_i){
   if(i<Ndp) sums[tidx] = data[d_i+i];
 };
 __global__ void
-kernel_set_trading(){
-};
+kernel_set_fitness(double *sums, double *trades, 
+  double *fit_scores, double *data, double d_i)
+{
+  UINT i = threadIdx.x; /*agent number*/
+  if(i<Na){
+    double result = sums[(Nn*i)+(Nn-1)];
+    result = 1/(1+exp(-result))-.5;
 
+    /*t1=in_trade, t2=buy_at, t3=sell_at, t4=amount*/
+    UINT t1,t2,t3,t4;
+    t1 = i*4;  /*i agents times 4 trade variabales*/
+    t2 = t1+1; t3 = t2+1; t4 = t3+1;
+
+    if(result>0 && trades[t1] == 0){
+      /*buy*/
+      trades[t1] = 1;
+      trades[t2] = data[d_i+/*candle-close i*/];
+      trades[t4] = fit_scores[i];
+    }
+    else if(result<=0 && trades[t1] == 1){
+      /*sell*/
+      trades[t1]    = 0;
+      trades[t3]    = data[d_i+/*candle-close i*/];
+      double ratio  = trades[t3] / trades[t2];
+      fit_scores[i] = ratio * trades[t4];
+    };
+  };
+  __syncthreads();
+};
 
 
 // Functions
@@ -152,7 +180,8 @@ kernel_set_trading(){
 inline void
 agents_prepare(){ kernel_prepare<<<Na,Nn>>>(sums.d, reacts.d); };
 inline void
-agents_fire(){ kernel_fire<<<(Na*Nn),Nn>>>(sums.d, raw_sums.d, reacts.d, weights.d); };
+agents_fire(){ kernel_fire<<<(Na*Nn),Nn>>>(
+  sums.d, raw_sums.d, reacts.d, weights.d); };
 inline void
 agents_add(){ kernel_add<<<(Na*Nn)/2,Nn>>>(sums.d, raw_sums.d); };
 
@@ -166,11 +195,18 @@ agents_set_inputs(){
 };
 
 inline void
+agents_set_fitness(){ 
+  kernel_set_fitness<<<1,Nn>>>(sums.d, trades.d, fit_scores.d,
+    data.d, (data_i-Ndp)); 
+};
+
+inline void
 agents_run_generation(){ 
   agents_set_inputs();
   agents_prepare();
   agents_fire();
   agents_add();
+  agents_set_fitness();
 };
 
 ////////////////////////////////////////////////////////////////////////////////
