@@ -33,14 +33,13 @@ set_random_agents(){
 __device__ inline void
 get_start_points(UINT *itr_rs, UINT *itr_w, const UINT &tidx){
   UINT a,n,i,n2,i2;
-  a  = tidx/Np; n  = tidx/Nn-a*Nn; i = tidx-(a*Np+n*Nn);
-  n2 = i;       i2 = n;
 
-  *itr_rs = a*Nn+n2; *itr_w = a*Np+n2*Nn+i2;
-};
+  a = tidx/Np; n = (tidx-(a*Np))/Nn; i = (tidx-(a*Np))-(n*Nn);
+  *itr_rs = i; *itr_w = (a*Nn)+(i*Nn)+n;
 
-__device__ inline void
-get_start_points_add(UINT *itr_1, UINT *itr_2, const UINT &tidx){
+  // a  = tidx/Np; n  = tidx/Nn-a*Nn; i = tidx-(a*Np+n*Nn);
+  // n2 = i;       i2 = n;
+  // *itr_rs = a*Nn+n2; *itr_w = a*Np+n2*Nn+i2;
 };
 
 // KERNELS
@@ -94,30 +93,31 @@ kernel_add(double *sums, double *raw_sums){
   /* each block will process 2 neurons at a time */
   volatile __shared__ double sums1[Nn];
   volatile __shared__ double sums2[Nn];
-  UINT tidx, itr;
+  UINT tidx, itr1, itr2, a, n, i;
+  i = threadIdx.x; n = blockIdx.x;
   tidx = blockIdx.x*blockDim.x+threadIdx.x;
-
-  if(blockIdx.x < gridDim.x/2){
-    /*first half of block*/
-    itr = tidx;
-    sums1[itr] = raw_sums[itr];
-    sums1[itr+(gridDim.x/2)*Nn] = raw_sums[itr+(gridDim.x/2)*Nn];
-  }
-  else{
-    /*second half of block*/
-    itr = tidx + (gridDim.x/2)*Nn;
-    sums2 = raw_sums[itr];
-  };
+  sums1[i] = raw_sums[tidx];
+  sums2[i] = raw_sums[tidx+Np*(Na/2)];
   __syncthreads();
 
-  // get_start_points_add(&itr_1, &itr_2, tidx);
-
-  // volatile __shared__ double s_raw_sums1[Na*Np];
-  // volatile __shared__ double s_sums1[Na*Nn];
-
-  // volatile __shared__ double s_raw_sums2[Na*Np];
-  // volatile __shared__ double s_sums2[Na*Nn];
-
+  a = (UINT)tidx/Np;
+  if(i<Nn/2){
+    for(UINT s=blockIdx.x/2; s>0; s>>=1){
+      if(i<s)
+        sums1[s] += sums1[i+s];
+      __syncthreads();
+    };
+    sums[n] = sums1[0];
+  }
+  else{
+    i -= Nn/2;
+    for(UINT s=blockIdx.x/2; s>0; s>>=1){
+      if(i<s)
+        sums2[s] += sums2[i+s];
+      __syncthreads();
+    };
+    sums[n+Nn*(Na/2)] = sums2[0];
+  };
 };
 
 
