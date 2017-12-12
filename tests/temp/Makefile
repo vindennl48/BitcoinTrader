@@ -1,5 +1,5 @@
 CXXFLAGS= -std=c++11 -O0
-NVCCFLAGS= -std=c++11
+NVCCFLAGS= -std=c++11 -O0
 NAME= main
 
 all: $(NAME).cu

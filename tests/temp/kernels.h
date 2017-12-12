@@ -17,9 +17,9 @@ send_agents(){
 __host__ inline void
 receive_agents(){
   sums.receive(); 
-  reacts.receive(); 
-  raw_sums.receive();
-  weights.receive();
+  //reacts.receive(); 
+  //raw_sums.receive();
+  //weights.receive();
 };
 
 __host__ inline void
@@ -59,31 +59,41 @@ __global__ void
 kernel_fire(double *sums, double *raw_sums,
   double *reacts, double *weights)
 {
-  volatile __shared__ double s_reacts[Nn];
-  volatile __shared__ double s_weights[Nn];
-  volatile __shared__ double s_raw_sums[Nn];
 
   UINT tidx = blockIdx.x*blockDim.x+threadIdx.x;
-  UINT i    = threadIdx.x;
   UINT itr_rs, itr_w;
   get_start_points(&itr_rs, &itr_w, tidx);
-  s_reacts[i]   = reacts[itr_rs];
-  s_weights[i]  = weights[itr_w];
-  s_raw_sums[i] = 0;
-   __syncthreads();
 
   if(itr_w != tidx)
-    s_raw_sums[i] = s_reacts[i] * s_weights[i];
+    raw_sums[tidx] = reacts[itr_rs] * weights[itr_w];
   else
-    s_raw_sums[i] = 0;
-  __syncthreads();
+    raw_sums[tidx] = 0;
 
-  raw_sums[tidx] = s_raw_sums[i];
+//  volatile __shared__ double s_reacts[Nn];
+//  volatile __shared__ double s_weights[Nn];
+//  volatile __shared__ double s_raw_sums[Nn];
+//
+//  UINT tidx = blockIdx.x*blockDim.x+threadIdx.x;
+//  UINT i    = threadIdx.x;
+//  UINT itr_rs, itr_w;
+//  get_start_points(&itr_rs, &itr_w, tidx);
+//  s_reacts[i]   = reacts[itr_rs];
+//  s_weights[i]  = weights[itr_w];
+//  s_raw_sums[i] = 0;
+//   __syncthreads();
+//
+//  if(itr_w != tidx)
+//    s_raw_sums[i] = s_reacts[i] * s_weights[i];
+//  else
+//    s_raw_sums[i] = 0;
+//  __syncthreads();
+//
+//  raw_sums[tidx] = s_raw_sums[i];
 };
+
 
 __global__ void
 kernel_add(double *sums, double *raw_sums){
-
   /* each block will process 2 neurons at a time */
   volatile __shared__ double sums1[Nn];
   volatile __shared__ double sums2[Nn];

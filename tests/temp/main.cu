@@ -15,17 +15,21 @@ int main(){
   int start = mtime();
 
   send_agents();
-  loop(i, 20000){
-    kernel_prepare<<<Na,Nn>>>(sums.d, reacts.d);
-    kernel_fire<<<(Na*Nn),Nn>>>(sums.d, raw_sums.d, reacts.d, weights.d);
-    kernel_add<<<(Na*Nn),Nn>>>(sums.d, raw_sums.d);
+  loop(j, 10){
+    print("Hey");
+    loop(i, 10) nprint(dbl_to_s(sums[i],2) << ", ");
+    loop(i, 10000){
+      kernel_prepare<<<Na,Nn>>>(sums.d, reacts.d);
+      kernel_fire<<<(Na*Nn),Nn>>>(sums.d, raw_sums.d, reacts.d, weights.d);
+      kernel_add<<<(Na*Nn)/2,Nn>>>(sums.d, raw_sums.d);
+    };
+    receive_agents();
   };
-  receive_agents();
 
   int end = mtime();
-  print("Elapsed Time: " << (start-end) << "ms");
 
-  loop(i, Nn) nprint(dbl_to_s(sums[i],2) << ", ");
+  print("\nElapsed Time: " << (start-end) << "ms");
+
 
   return 0;
 }
